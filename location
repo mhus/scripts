@@ -1,0 +1,107 @@
+#!/bin/bash
+
+if [ -z $LOC_HOME ]; then
+  LOC_HOME=~/bin/scripts2
+fi
+
+if [ -z $1 ]; then
+  CUR=`cat $LOC_HOME/current_location.txt`
+  echo "Location: $CUR"
+  exit
+fi
+
+if [ $1 = "add" ]; then
+  if [ -z $2 ]; then
+    echo "Please declare a file"
+    echo "Usage: $0 add <filepath>"
+    exit
+  fi
+
+  F=`readlink -f $2`
+  if [ ! -f $F ]; then
+    echo "File not found $F"
+    exit
+  fi
+
+  for f in `cat $LOC_HOME/location_list`; do
+    if [ $f = $2 ]; then
+      echo "already added";
+      exit
+    fi
+  done
+  
+  for i in `ls $LOC_HOME/location.*`; do
+    L=`echo $i|cut -d . -f 2`
+    echo "--- $L"
+    cp $F $F.$L
+  done
+
+  echo $F >> $LOC_HOME/location_list  
+
+  exit
+fi
+
+if [ $1 = "create" -o $1 = "update" ]; then
+  if [ -z $2 ]; then
+    echo "Please declare a location name"
+    echo "Usage: $0 create/update <name> [<template location>]"
+    exit
+  fi
+  if [ $1 = "create" -a -f $LOC_HOME/location.$2 ]; then
+    echo "Location already exists"
+    exit
+  fi
+
+  if [ ! -e $LOC_HOME/location.$2 ]; then
+    touch $LOC_HOME/location.$2
+  fi
+
+  X=""
+  if [ ! -z $3 ]; then
+    X=".$3";
+  fi
+
+  for f in `cat $LOC_HOME/location_list`; do
+    # since readlink -f is no more working ... F=`readlink -f $f`
+    F=$f
+    echo "--- $F"
+    if [ -f $F ]; then
+      if [ -f $F$X ]; then
+        cp $F$X $F.$2
+      else
+        cp $F $F.$2
+      fi
+    fi
+  done
+  exit
+fi
+
+if [ $1 = "show" -o ! -e $LOC_HOME/location.$1 ]; then
+  if [ ! $1 = "show" ]; then
+    echo Location is unknown. Use one of the following:
+  fi
+  for i in `ls $LOC_HOME/location.*`; do echo $i|cut -d . -f 2; done
+  exit
+fi
+
+echo -n $1 > $LOC_HOME/current_location.txt
+. $LOC_HOME/location.$1
+
+for f in `cat $LOC_HOME/location_list`; do
+  # F=`readlink -f $f`
+  F=$f
+  echo -n "--- $F"
+  if [ -f $F ]; then 
+    echo -n " :"
+    if [ -f $F.$1 ]; then
+      echo -n " [$1]"
+      cp $F.$1 $F
+    elif [ -f $F.$PARENT ]; then
+      echo -n " [$PARENT]"
+      cp $F.$PARENT $F
+    fi
+  fi
+  echo
+  . $LOC_HOME/env/env
+done
+
