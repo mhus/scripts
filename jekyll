@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker run --rm -v "$PWD:/srv/jekyll" -v "/tmp/jekyll_cache/$PWD:/usr/local/bundle" -p 4000:4000 -it jekyll/jekyll:3.8 jekyll $@
+
