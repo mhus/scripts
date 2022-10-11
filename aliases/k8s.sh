@@ -5,5 +5,6 @@ alias kg="kubectl get"
 alias kd="kubectl describe"
 alias kwatch="watch kubectl get"
 alias kevents="kubectl get events --watch"
+alias d=docker
 
 export kd="--dry-run=client -oyaml"
