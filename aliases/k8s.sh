@@ -11,6 +11,8 @@ alias d=docker
 alias klog="kubectl logs --follow"
 alias tf=terraform
 kbash() { kubectl exec -it $@ -- bash } 
+kzsh() { kubectl exec -it $@ -- zsh }
+alias kexec="kubectl exec -it"
 export kd="--dry-run=client -oyaml"
 # do not use less for aws command
 export AWS_PAGER=""
